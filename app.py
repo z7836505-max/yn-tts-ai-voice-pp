@@ -1,6 +1,5 @@
 import streamlit as st
-from elevenlabs import generate, save
-from elevenlabs import set_api_key
+from elevenlabs import generate, save, set_api_key
 
 # Secrets ထဲက API Key ကို ခေါ်သုံးခြင်း
 try:
@@ -11,22 +10,24 @@ except:
 
 st.title("AI Voice Generator (Pro)")
 
-# စာသားရိုက်ရန်
 text = st.text_area("စာသားရိုက်ထည့်ပါ", placeholder="ဒီမှာ စာရိုက်ပါ...")
-
-# အသံရွေးရန် (အမျိုးသား/အမျိုးသမီး)
 voice = st.selectbox("အသံရွေးချယ်ပါ", ["အမျိုးသမီး (Bella)", "အမျိုးသား (Adam)"])
 
 if st.button("အသံဖိုင်ထုတ်မည်"):
     if not text.strip():
         st.warning("ကျေးဇူးပြု၍ စာရိုက်ပေးပါ")
     else:
+        # ElevenLabs Voice ID များ
         voice_id = "EXAVITQu4vr4xnSDxMaL" if voice == "အမျိုးသမီး (Bella)" else "pNInz6obpgDQGcFmaJgB"
         
         with st.spinner('အသံဖိုင် ထုတ်နေပါသည်...'):
             try:
                 # အသံဖိုင်ထုတ်ခြင်း
-                audio = generate(text=text, voice=voice_id, model="eleven_multilingual_v2")
+                audio = generate(
+                    text=text,
+                    voice=voice_id,
+                    model="eleven_multilingual_v2"
+                )
                 save(audio, "output.mp3")
                 
                 # အသံဖွင့်ပြခြင်း
