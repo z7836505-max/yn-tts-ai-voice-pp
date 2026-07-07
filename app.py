@@ -1,32 +1,44 @@
 import streamlit as st
-from gtts import gTTS
-import os
+from elevenlabs import generate, save
+from elevenlabs import set_api_key
 
-st.title("AI Voice Generator")
+# Secrets ထဲက API Key ကို ခေါ်သုံးခြင်း
+try:
+    api_key = st.secrets["ELEVENLABS_API_KEY"]
+    set_api_key(api_key)
+except:
+    st.error("API Key မတွေ့ရှိပါ။ Secrets ထဲတွင် ထည့်သွင်းပေးပါ။")
 
-# စာသားရိုက်ရန်နေရာ
+st.title("AI Voice Generator (Pro)")
+
+# စာသားရိုက်ရန်
 text = st.text_area("စာသားရိုက်ထည့်ပါ", placeholder="ဒီမှာ စာရိုက်ပါ...")
 
-# အသံရွေးချယ်ရန် Dropdown (လက်ရှိတွင် မြန်မာဘာသာစကားဖြင့် အသံထွက်မည်)
-voice = st.selectbox("အသံအမျိုးအစားရွေးပါ", ["အမျိုးသား (အေးဆေး)", "အမျိုးသမီး (ကြည်လင်)"])
+# အသံရွေးရန် (အမျိုးသား/အမျိုးသမီး)
+voice = st.selectbox("အသံရွေးချယ်ပါ", ["အမျိုးသမီး (Bella)", "အမျိုးသား (Adam)"])
 
 if st.button("အသံဖိုင်ထုတ်မည်"):
     if not text.strip():
         st.warning("ကျေးဇူးပြု၍ စာရိုက်ပေးပါ")
     else:
-        # အသံဖိုင်ထုတ်ခြင်း
-        tts = gTTS(text=text, lang='my')
-        filename = "output.mp3"
-        tts.save(filename)
+        voice_id = "EXAVITQu4vr4xnSDxMaL" if voice == "အမျိုးသမီး (Bella)" else "pNInz6obpgDQGcFmaJgB"
         
-        # Website ပေါ်တွင် အသံဖွင့်ပြခြင်း
-        st.audio(filename)
-        
-        # ဒေါင်းလုဒ်ဆွဲရန် ခလုတ်
-        with open(filename, "rb") as file:
-            st.download_button(
-                label="MP3 ဖိုင် ဒေါင်းလုဒ်ဆွဲရန်",
-                data=file,
-                file_name="AI_Voice.mp3",
-                mime="audio/mp3"
-            )
+        with st.spinner('အသံဖိုင် ထုတ်နေပါသည်...'):
+            try:
+                # အသံဖိုင်ထုတ်ခြင်း
+                audio = generate(text=text, voice=voice_id, model="eleven_multilingual_v2")
+                save(audio, "output.mp3")
+                
+                # အသံဖွင့်ပြခြင်း
+                st.audio("output.mp3")
+                
+                # ဒေါင်းလုဒ်ခလုတ်
+                with open("output.mp3", "rb") as file:
+                    st.download_button(
+                        label="📥 MP3 ဖိုင် ဒေါင်းလုဒ်ဆွဲရန်",
+                        data=file,
+                        file_name="AI_Voice.mp3",
+                        mime="audio/mp3"
+                    )
+            except Exception as e:
+                st.error(f"အမှားဖြစ်ပေါ်သည်: {e}")
